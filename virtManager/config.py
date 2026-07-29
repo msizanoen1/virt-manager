@@ -174,7 +174,7 @@ class vmmConfig:
         self.default_graphics_from_config = BuildConfig.default_graphics
         self.default_hvs = BuildConfig.default_hvs
 
-        self.default_storage_format_from_config = "qcow2"
+        self.default_storage_format_from_config = "raw"
         self.default_console_resizeguest = 0
 
         self._objects = []
