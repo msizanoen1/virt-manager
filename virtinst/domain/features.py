@@ -94,11 +94,12 @@ class DomainFeatures(XMLBuilder):
         # which libvirt hides under hypervclock timer.
         if guest.clock.has_hyperv_timer():
             _enable("stimer", requires=["vpindex", "synic"])
-            _enable("stimer_direct", requires=["vpindex", "synic", "stimer"])
+            _enable("stimer_direct", feature="stimer", requires=["vpindex", "synic", "stimer"])
 
         _enable("frequencies")
 
         _enable("tlbflush", requires=["vpindex"])
+        _enable("tlbflush_direct", feature="tlbflush", requires=["vapic"])
         _enable("ipi", requires=["vpindex"])
 
         if guest.conn.caps.host.cpu.vendor == "Intel":
@@ -106,6 +107,8 @@ class DomainFeatures(XMLBuilder):
 
         if self.apic is True:
             _enable("avic")
+
+        _enable("emsr_bitmap")
 
     def set_defaults(self, guest):
         if guest.os.is_container():
