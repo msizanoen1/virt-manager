@@ -109,6 +109,7 @@ class DomainFeatures(XMLBuilder):
             _enable("avic")
 
         _enable("emsr_bitmap")
+        _enable("xmm_input")
 
     def set_defaults(self, guest):
         if guest.os.is_container():
