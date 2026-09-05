@@ -278,6 +278,18 @@ class DomainCpu(XMLBuilder):
     model_vendor_id = XMLProperty("./model/@vendor_id")
     vendor = XMLProperty("./vendor")
 
+    vmx_policy = XMLProperty("./feature[@name='vmx']/@policy")
+    svm_policy = XMLProperty("./feature[@name='svm']/@policy")
+    cet_ibt_policy = XMLProperty("./feature[@name='cet-ibt']/@policy")
+    cet_ss_policy = XMLProperty("./feature[@name='cet-ss']/@policy")
+
+    SPECIAL_FEATURES = {
+        "vmx": "vmx_policy",
+        "svm": "svm_policy",
+        "cet-ss": "cet_ss_policy",
+        "cet-ibt": "cet_ibt_policy",
+    }
+
     topology = XMLChildProperty(_CPUTopology, is_single=True)
     cache = XMLChildProperty(_CPUCache, is_single=True)
     features = XMLChildProperty(_CPUFeature)
@@ -444,6 +456,10 @@ class DomainCpu(XMLBuilder):
         self.model = val
 
     def add_feature(self, name, policy="require"):
+        if name in self.SPECIAL_FEATURES:
+            setattr(self, self.SPECIAL_FEATURES[name], policy)
+            return
+
         feature = self.features.add_new()
         feature.name = name
         feature.policy = policy
@@ -510,6 +526,18 @@ class DomainCpu(XMLBuilder):
             self._validate_default_host_model_only(guest)
 
     def set_defaults(self, guest):
+        if guest.os.is_x86():
+            if self.vmx_policy is None:
+                self.vmx_policy = "disable"
+            if self.svm_policy is None:
+                self.svm_policy = "disable"
+
+            if guest.hyperv_supported():
+                if self.cet_ibt_policy is None:
+                    self.cet_ibt_policy = "disable"
+                if self.cet_ss_policy is None:
+                    self.cet_ss_policy = "disable"
+
         if not self.conn.is_test() and not self.conn.is_qemu():
             return
         if self.special_mode_was_set:
